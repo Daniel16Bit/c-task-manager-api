@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "*.ejs": "html",
+        ".fantomasignore": "ignore",
+        "stdio.h": "c",
+        "AULA25.C": "cpp",
+        "Aula25 copy.C": "cpp",
+        "Aula25b.C": "cpp"
+    }
+}
