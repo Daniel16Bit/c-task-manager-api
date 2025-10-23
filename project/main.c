@@ -25,8 +25,8 @@ int main (){
     }
 
     printf("Socket Criado com sucesso!\n");
-
-
+    printf("Pressione ENTER para sair...");
+    getchar();
     
     WSACleanup();
     return 0;
