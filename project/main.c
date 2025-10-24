@@ -1,3 +1,13 @@
+
+
+
+/*
+Este projeto se chama: c-task-manager-api, que é um gerenciador de tarefas em C com terminal como interface (CLI), 
+persistência em SQLite e backend com API REST criada manualmente com sockets HTTP simples
+
+*/
+
+
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <windows.h>
@@ -36,7 +46,7 @@ int main()
 
     resultado_bind = bind(servidor, (struct sockaddr*)&endereco, sizeof(endereco));
     if (resultado_bind == SOCKET_ERROR){
-        printf("Erro ao fazer o BIND. Codigo de error: %d\n", WSAGetLastError());
+        printf("Erro ao fazer o Bind. Codigo de error: %d\n", WSAGetLastError());
         WSACleanup();
         return 1;
     }
