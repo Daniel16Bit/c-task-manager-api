@@ -62,15 +62,17 @@ int main()
     }
 
     printf("Socket Criado com sucesso!\n");
-    printf("Servidor escutando na porta 8080...\n");
-    printf("Aguardando conexão de usuario...\n");
+printf("Servidor escutando na porta 8080...\n");
+printf("Aguardando conexoes...\n\n");
 
+while (1)
+{
+    printf("Aguardando proximo cliente...\n");
     cliente = accept(servidor, NULL, NULL);
     if (cliente == INVALID_SOCKET)
     {
         printf("Erro ao aceitar conexao. Codigo: %d\n", WSAGetLastError());
-        WSACleanup();
-        return 1;
+        continue;  // ← Tenta aceitar o próximo ao invés de encerrar
     }
 
     bytes_recebidos = recv(cliente, buffer, sizeof(buffer) - 1, 0);
@@ -88,20 +90,14 @@ int main()
             "<h1>Servidor C Funcionando!</h1><p>c-task-manager-api v0.1</p>";
 
         send(cliente, resposta, strlen(resposta), 0);
-        printf("Resposta enviada ao cliente\n");
+        printf("Resposta enviada ao cliente!\n");
     }
 
     closesocket(cliente);
     printf("Conexao encerrada.\n\n");
+ }  // ← Fecha o while (1)
 
-    printf("Servidor continua rodando...\n");
-    printf("Pressione Ctrl+C para encerrar.\n");
-
-    // Loop infinito para aceitar múltiplos clientes
-    
-    while (1)
-    {
-        Sleep(1000); // Aguarda 1 segundo
-    }
+    // Este código nunca vai executar (while infinito), mas é boa prática
+    WSACleanup();
     return 0;
-}
+}  // ← Fecha o main()
