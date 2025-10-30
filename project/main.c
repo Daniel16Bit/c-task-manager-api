@@ -4,7 +4,6 @@ Este projeto se chama: c-task-manager-api, que é um gerenciador de tarefas em C
 persistência em SQLite e backend com API REST criada manualmente com sockets HTTP simples
 */
 
-
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <windows.h>
@@ -23,6 +22,8 @@ int main()
     struct sockaddr_in endereco;
     int resultado_bind;
     int resultado_listen;
+    char buffer[4096];
+    int bytes_recebidos;
 
     result = WSAStartup(MAKEWORD(2, 2), &wsa);
 
@@ -72,10 +73,35 @@ int main()
         return 1;
     }
 
-    printf("Cliente conectado com sucesso!\n");
-    printf("Pressione ENTER para encerrar...\n");
-    getchar();
+    bytes_recebidos = recv(cliente, buffer, sizeof(buffer) - 1, 0);
 
-    WSACleanup();
+    if (bytes_recebidos > 0)
+    {
+        buffer[bytes_recebidos] = '\0';
+        printf("\n=== Requisicao recebida ===\n%s\n", buffer);
+
+        const char *resposta =
+            "HTTP/1.1 200 OK\r\n"
+            "Content-Type: text/html\r\n"
+            "Content-Length: 68\r\n"
+            "\r\n"
+            "<h1>Servidor C Funcionando!</h1><p>c-task-manager-api v0.1</p>";
+
+        send(cliente, resposta, strlen(resposta), 0);
+        printf("Resposta enviada ao cliente\n");
+    }
+
+    closesocket(cliente);
+    printf("Conexao encerrada.\n\n");
+
+    printf("Servidor continua rodando...\n");
+    printf("Pressione Ctrl+C para encerrar.\n");
+
+    // Loop infinito para aceitar múltiplos clientes
+    
+    while (1)
+    {
+        Sleep(1000); // Aguarda 1 segundo
+    }
     return 0;
 }
