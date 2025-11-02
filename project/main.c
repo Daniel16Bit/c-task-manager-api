@@ -1,6 +1,8 @@
 /*
+===============================================================================================
 Este projeto se chama: c-task-manager-api, que é um gerenciador de tarefas em C com terminal como interface (CLI),
 persistência em SQLite e backend com API REST criada manualmente com sockets HTTP simples
+===============================================================================================
 */
 
 #include <winsock2.h>
