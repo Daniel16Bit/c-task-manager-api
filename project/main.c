@@ -1,4 +1,3 @@
-
 /*
 Este projeto se chama: c-task-manager-api, que é um gerenciador de tarefas em C com terminal como interface (CLI),
 persistência em SQLite e backend com API REST criada manualmente com sockets HTTP simples
@@ -8,15 +7,24 @@ persistência em SQLite e backend com API REST criada manualmente com sockets HT
 #include <ws2tcpip.h>
 #include <windows.h>
 #include <stdio.h>
+#include <string.h>
+
+// Função para extrair o caminho da requisição HTTP
+void extrair_caminho(const char *requisicao, char *caminho, size_t tamanho) {
+    char p_linha[256];
+    sscanf(requisicao, "%255[^\r\n]", p_linha);
+    
+    char metodo[10];
+    sscanf(p_linha, "%s %s", metodo, caminho);
+}
 
 int main()
 {
-
     // LEMBRETE: Variáveis da Winsock
     WSADATA wsa;
     int result;
 
-    // LEMBBRETE: Variáveis do socket e rede
+    // LEMBRETE: Variáveis do socket e rede
     SOCKET servidor; // ← Socket "mãe" que ESCUTA conexões
     SOCKET cliente;  // ← Socket "filho" que CONVERSA com UM cliente específico
     struct sockaddr_in endereco;
@@ -62,42 +70,46 @@ int main()
     }
 
     printf("Socket Criado com sucesso!\n");
-printf("Servidor escutando na porta 8080...\n");
-printf("Aguardando conexoes...\n\n");
+    printf("Servidor escutando na porta 8080...\n");
+    printf("Aguardando conexoes...\n\n");
 
-while (1)
-{
-    printf("Aguardando proximo cliente...\n");
-    cliente = accept(servidor, NULL, NULL);
-    if (cliente == INVALID_SOCKET)
+    while (1)
     {
-        printf("Erro ao aceitar conexao. Codigo: %d\n", WSAGetLastError());
-        continue;  // ← Tenta aceitar o próximo ao invés de encerrar
+        printf("Aguardando proximo cliente...\n");
+        cliente = accept(servidor, NULL, NULL);
+        if (cliente == INVALID_SOCKET)
+        {
+            printf("Erro ao aceitar conexao. Codigo: %d\n", WSAGetLastError());
+            continue;
+        }
+
+        bytes_recebidos = recv(cliente, buffer, sizeof(buffer) - 1, 0);
+
+        if (bytes_recebidos > 0)
+        {
+            buffer[bytes_recebidos] = '\0';
+            printf("\n=== Requisicao recebida ===\n%s\n", buffer);
+            
+            // Extrai o caminho da requisição
+            char caminho[256];
+            extrair_caminho(buffer, caminho, sizeof(caminho));
+            printf(">>> Caminho extraido: %s\n\n", caminho);
+
+            const char *resposta =
+                "HTTP/1.1 200 OK\r\n"
+                "Content-Type: text/html\r\n"
+                "Content-Length: 68\r\n"
+                "\r\n"
+                "<h1>Servidor C Funcionando!</h1><p>c-task-manager-api v0.1</p>";
+
+            send(cliente, resposta, strlen(resposta), 0);
+            printf("Resposta enviada ao cliente!\n");
+        }
+
+        closesocket(cliente);
+        printf("Conexao encerrada.\n\n");
     }
 
-    bytes_recebidos = recv(cliente, buffer, sizeof(buffer) - 1, 0);
-
-    if (bytes_recebidos > 0)
-    {
-        buffer[bytes_recebidos] = '\0';
-        printf("\n=== Requisicao recebida ===\n%s\n", buffer);
-
-        const char *resposta =
-            "HTTP/1.1 200 OK\r\n"
-            "Content-Type: text/html\r\n"
-            "Content-Length: 68\r\n"
-            "\r\n"
-            "<h1>Servidor C Funcionando!</h1><p>c-task-manager-api v0.1</p>";
-
-        send(cliente, resposta, strlen(resposta), 0);
-        printf("Resposta enviada ao cliente!\n");
-    }
-
-    closesocket(cliente);
-    printf("Conexao encerrada.\n\n");
- }  // ← Fecha o while (1)
-
-    // Este código nunca vai executar (while infinito), mas é boa prática
     WSACleanup();
     return 0;
-}  // ← Fecha o main()
+}
