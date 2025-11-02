@@ -121,9 +121,9 @@ int main()
                     "\r\n"
                     "{\"tasks\": [{\"id\": 1, \"title\": \"Aprender C\"}, {\"id\": 2, \"title\": \"Criar API\"}]}";
             }
-            else if (strncmp(caminho, "/tasks/", 8) == 0)
+            else if (strncmp(caminho, "/tasks/", 7) == 0)
             {
-                int task_id = atoi(caminho + 8);
+                int task_id = atoi(caminho + 7);
 
                 char json_resposta[512];
                 snprintf(json_resposta, sizeof(json_resposta),
