@@ -12,12 +12,11 @@ persistência em SQLite e backend com API REST criada manualmente com sockets HT
 #include <string.h>
 
 // Função para extrair o caminho da requisição HTTP
-void extrair_caminho(const char *requisicao, char *caminho, size_t tamanho)
+void extrair_requisao(const char *requisicao, char *metodo, char *caminho, size_t tamanho)
 {
     char p_linha[256];
     sscanf(requisicao, "%255[^\r\n]", p_linha);
 
-    char metodo[10];
     sscanf(p_linha, "%s %s", metodo, caminho);
 }
 
@@ -94,13 +93,15 @@ int main()
             printf("\n=== Requisicao recebida ===\n%s\n", buffer);
 
             // Extrai o caminho da requisição
+            char metodo[10];
             char caminho[256];
-            extrair_caminho(buffer, caminho, sizeof(caminho));
-            printf(">>> Caminho extraido: %s\n\n", caminho);
+            extrair_requisao(buffer, metodo, caminho, sizeof(caminho));
+            printf(">>> Metodo: %s | Caminho: %s\n\n", metodo, caminho);
 
             const char *resposta;
 
-            if (strcmp(caminho, "/") == 0)
+            // ===== ROTA: GET / =====
+            if (strcmp(metodo, "GET") == 0 && strcmp(caminho, "/") == 0)
             {
                 resposta =
                     "HTTP/1.1 200 OK\r\n"
@@ -111,9 +112,13 @@ int main()
                     "<ul>"
                     "<li>GET /tasks - Lista todas as tarefas</li>"
                     "<li>GET /tasks/:id - Obtem uma tarefa especifica</li>"
+                    "<li>POST /tasks - Cria uma nova tarefa</li>"
+                    "<li>PUT /tasks/:id - Atualiza uma tarefa</li>"
+                    "<li>DELETE /tasks/:id - Deleta uma tarefa</li>"
                     "</ul>";
             }
-            else if (strcmp(caminho, "/tasks") == 0)
+            // ===== ROTA: GET /tasks =====
+            else if (strcmp(metodo, "GET") == 0 && strcmp(caminho, "/tasks") == 0)
             {
                 resposta =
                     "HTTP/1.1 200 OK\r\n"
@@ -121,7 +126,8 @@ int main()
                     "\r\n"
                     "{\"tasks\": [{\"id\": 1, \"title\": \"Aprender C\"}, {\"id\": 2, \"title\": \"Criar API\"}]}";
             }
-            else if (strncmp(caminho, "/tasks/", 7) == 0)
+            // ===== ROTA: GET /tasks/:id =====
+            else if (strcmp(metodo, "GET") == 0 && strncmp(caminho, "/tasks/", 7) == 0)
             {
                 int task_id = atoi(caminho + 7);
 
@@ -137,9 +143,59 @@ int main()
                 printf("Resposta enviada ao cliente!\n");
 
                 closesocket(cliente);
-                printf("Conexão encerrada. \n\n");
-                continue; // Pula o send() normal abaixo
+                printf("Conexao encerrada.\n\n");
+                continue;
             }
+            // ===== ROTA: POST /tasks =====
+            else if (strcmp(metodo, "POST") == 0 && strcmp(caminho, "/tasks") == 0)
+            {
+                resposta =
+                    "HTTP/1.1 201 Created\r\n"
+                    "Content-Type: application/json\r\n"
+                    "\r\n"
+                    "{\"message\": \"Tarefa criada\", \"id\": 3}";
+            }
+            // ===== ROTA: PUT /tasks/:id =====
+            else if (strcmp(metodo, "PUT") == 0 && strncmp(caminho, "/tasks/", 7) == 0)
+            {
+                int task_id = atoi(caminho + 7);
+
+                char json_resposta[512];
+                snprintf(json_resposta, sizeof(json_resposta),
+                         "HTTP/1.1 200 OK\r\n"
+                         "Content-Type: application/json\r\n"
+                         "\r\n"
+                         "{\"message\": \"Tarefa %d atualizada\"}",
+                         task_id);
+
+                send(cliente, json_resposta, strlen(json_resposta), 0);
+                printf("Resposta enviada ao cliente!\n");
+
+                closesocket(cliente);
+                printf("Conexao encerrada.\n\n");
+                continue;
+            }
+            // ===== ROTA: DELETE /tasks/:id =====
+            else if (strcmp(metodo, "DELETE") == 0 && strncmp(caminho, "/tasks/", 7) == 0)
+            {
+                int task_id = atoi(caminho + 7);
+
+                char json_resposta[512];
+                snprintf(json_resposta, sizeof(json_resposta),
+                         "HTTP/1.1 200 OK\r\n"
+                         "Content-Type: application/json\r\n"
+                         "\r\n"
+                         "{\"message\": \"Tarefa %d deletada\"}",
+                         task_id);
+
+                send(cliente, json_resposta, strlen(json_resposta), 0);
+                printf("Resposta enviada ao cliente!\n");
+
+                closesocket(cliente);
+                printf("Conexao encerrada.\n\n");
+                continue;
+            }
+            // ===== ROTA NÃO ENCONTRADA =====
             else
             {
                 resposta =
