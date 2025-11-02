@@ -12,10 +12,11 @@ persistência em SQLite e backend com API REST criada manualmente com sockets HT
 #include <string.h>
 
 // Função para extrair o caminho da requisição HTTP
-void extrair_caminho(const char *requisicao, char *caminho, size_t tamanho) {
+void extrair_caminho(const char *requisicao, char *caminho, size_t tamanho)
+{
     char p_linha[256];
     sscanf(requisicao, "%255[^\r\n]", p_linha);
-    
+
     char metodo[10];
     sscanf(p_linha, "%s %s", metodo, caminho);
 }
@@ -91,18 +92,62 @@ int main()
         {
             buffer[bytes_recebidos] = '\0';
             printf("\n=== Requisicao recebida ===\n%s\n", buffer);
-            
+
             // Extrai o caminho da requisição
             char caminho[256];
             extrair_caminho(buffer, caminho, sizeof(caminho));
             printf(">>> Caminho extraido: %s\n\n", caminho);
 
-            const char *resposta =
-                "HTTP/1.1 200 OK\r\n"
-                "Content-Type: text/html\r\n"
-                "Content-Length: 68\r\n"
-                "\r\n"
-                "<h1>Servidor C Funcionando!</h1><p>c-task-manager-api v0.1</p>";
+            const char *resposta;
+
+            if (strcmp(caminho, "/") == 0)
+            {
+                resposta =
+                    "HTTP/1.1 200 OK\r\n"
+                    "Content-Type: text/html\r\n"
+                    "\r\n"
+                    "<h1>API Task Manager</h1>"
+                    "<p>Rotas disponiveis:</p>"
+                    "<ul>"
+                    "<li>GET /tasks - Lista todas as tarefas</li>"
+                    "<li>GET /tasks/:id - Obtem uma tarefa especifica</li>"
+                    "</ul>";
+            }
+            else if (strcmp(caminho, "/tasks") == 0)
+            {
+                resposta =
+                    "HTTP/1.1 200 OK\r\n"
+                    "Content-Type: application/json\r\n"
+                    "\r\n"
+                    "{\"tasks\": [{\"id\": 1, \"title\": \"Aprender C\"}, {\"id\": 2, \"title\": \"Criar API\"}]}";
+            }
+            else if (strncmp(caminho, "/tasks/", 8) == 0)
+            {
+                int task_id = atoi(caminho + 8);
+
+                char json_resposta[512];
+                snprintf(json_resposta, sizeof(json_resposta),
+                         "HTTP/1.1 200 OK\r\n"
+                         "Content-Type: application/json\r\n"
+                         "\r\n"
+                         "{\"id\": %d, \"title\": \"Tarefa %d\", \"completed\": false}",
+                         task_id, task_id);
+
+                send(cliente, json_resposta, strlen(json_resposta), 0);
+                printf("Resposta enviada ao cliente!\n");
+
+                closesocket(cliente);
+                printf("Conexão encerrada. \n\n");
+                continue; // Pula o send() normal abaixo
+            }
+            else
+            {
+                resposta =
+                    "HTTP/1.1 404 Not Found\r\n"
+                    "Content-Type: application/json\r\n"
+                    "\r\n"
+                    "{\"error\": \"Rota nao encontrada\"}";
+            }
 
             send(cliente, resposta, strlen(resposta), 0);
             printf("Resposta enviada ao cliente!\n");
