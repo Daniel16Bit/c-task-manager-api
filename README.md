@@ -44,4 +44,4 @@ A task manager built from scratch in C, focused on deep learning and full contro
 
 ### Status
 
-🧱 In progress — First stage: Functional CLI with local storage.
+🧱 In progress 🧱
