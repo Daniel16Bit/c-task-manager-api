@@ -20,7 +20,7 @@ Um gerenciador de tarefas construído do zero em C, com foco em aprendizado prof
 
 ### Status
 
-🧱 Em construção — Primeira etapa: CLI funcional com armazenamento local.
+🧱 Em construção 🧱
 
 ---
 
