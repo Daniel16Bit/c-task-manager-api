@@ -20,7 +20,7 @@ Um gerenciador de tarefas construído do zero em C, com foco em aprendizado prof
 
 ### Status
 
-🧱 Em construção — Primeira etapa: CLI funcional com armazenamento local.
+🧱 Em construção 🧱
 
 ---
 
@@ -44,4 +44,4 @@ A task manager built from scratch in C, focused on deep learning and full contro
 
 ### Status
 
-🧱 In progress — First stage: Functional CLI with local storage.
+🧱 In progress 🧱
