@@ -144,7 +144,7 @@ int db_update_task(int id, const char *title, int completed){
 }
 
 // Deletar uma tarefa
-int db_delet_task(int id){
+int db_delete_task(int id){
     char sql[256];
     snprintf(sql, sizeof(sql), "DELETE FROM tasks WHERE id = %d;", id);
 
