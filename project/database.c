@@ -80,4 +80,84 @@ static int tasks_callback(void *data, int argc, char **argv, char **col_names){
     return 0;
 }
 
+// Retorna todas as tarefas
+Task* db_get_all_tasks(int *count){
+    *count = 00;
+    
+    // Primeiro, contar quantas tarefas existem
+    const char *sql_count = "SELECT * FROM Task;";
+    sqlite3_exec(db, sql_count, count_callback, count, NULL);
+
+    if (*count == 0){
+        return NULL;
+    }
+    // Alocar memória para as tarefas
+    task_array = (Task*)malloc(sizeof(Task) * (*count));
+    task_index = 0;
+
+
+    // Buscar as tarefas
+    sqlite3_exec(db, sql_count, tasks_callback, NULL, NULL);
+
+    return task_array;
+
+}
+
+Task* db_get_all_tasks_byId(int id){
+    char sql[256];
+    snprintf(sql, sizeof(sql), "SELECET * FROM tasks WHERE id = %d;", id);
+
+    int count = 0;
+    sqlite3_exec(db, sql, count_callback, &count, NULL);
+
+    if (count == 0){
+        return NULL;
+    }
+
+    Task *task = (Task*)malloc(sizeof(Task));
+    task_array = task;
+    task_index = 0;
+
+    sqlite3_exec(db, sql, tasks_callback, NULL,NULL);
+
+    return task;
+}
+
+
+// Atualizando tarefa
+int db_update_task(int id, const char *title, int completed){
+    char sql[256];
+    snprintf(sql, sizeof(sql),
+             "UPDATE tasks SET title = '%s', completed = %d WHERE id = %d;",
+             title, completed, id);
+    
+
+    char *err_msg = NULL;
+    int rc = sqlite3_exec(db, sql, NULL, NULL, &err_msg);
+    if (rc != SQLITE_OK){
+        fprintf(stderr, "Erro ao atualizar: %s\n", err_msg);
+        sqlite3_free(err_msg);
+        return -1;
+    }
+
+    return 0;
+}
+
+// Deletar uma tarefa
+int db_delet_task(int id){
+    char sql[256];
+    snprintf(sql, sizeof(sql), "DELETE FROM tasks WHERE id = %d;", id);
+
+    char *err_msg = NULL;
+    int rc = sqlite3_exec(db, sql, NULL, NULL, &err_msg);
+    if(rc != SQLITE_OK){
+        fprintf(stderr, "Erro ao deletar: %s\n", err_msg);
+        sqlite3_free(err_msg);
+        return -1;
+    }
+
+    return 0;
+
+}
+
 
