@@ -13,6 +13,7 @@ int db_init (const char *db_path){
         fprintf(stderr, "Erro ao Abrir o banco de dados: %s\n", sqlite3_errmsg(db));
         return -1;
     }
+    
 
 
     //Criar tabela caso ela não exista!
@@ -30,4 +31,30 @@ int db_init (const char *db_path){
     }
 
     return 0;
+}
+
+// Fecha o banco de dados
+void db_close() {
+    if (db) {
+        sqlite3_close(db);
+        db = NULL;
+    }
+}
+
+
+int db_create_task(const char *title, int completed){
+    char sql[512];
+    snprintf(sql, sizeof(sql),
+             "INSERT INTO tasks (title, completed) VALUES ('%s', %d);",
+             title, completed);
+
+    char *err_msg = NULL;
+    int rc = sqlite3_exec(db, sql, NULL, NULL, &err_msg);
+    if(rc != SQLITE_OK){
+        fprintf(stderr, "Erro ao criar tarefa %s\n", err_msg);
+        sqlite3_free(err_msg);
+        return -1;
+    }
+        return sqlite3_last_insert_rowid(db);
+
 }
