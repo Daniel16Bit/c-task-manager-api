@@ -58,3 +58,26 @@ int db_create_task(const char *title, int completed){
         return sqlite3_last_insert_rowid(db);
 
 }
+
+// Callback para contar linhas
+static int count_callback(void *data, int argc, char **argv, char **col_names){
+    int *count = (int*)data;
+    (*count)++;
+    return 0;
+}
+
+// Variáveis globais estáticas para preencher array
+static Task *task_array = NULL;
+static int task_index = 0;
+
+// Callback para preencher array de tasks
+static int tasks_callback(void *data, int argc, char **argv, char **col_names){
+    Task *task = &task_array[task_index++];
+    task->id = atoi(argv[0]);
+    strncpy(task->title, argv[1], 255);
+    task->title[255] = '\0';
+    task->completed = atoi(argv[2]);
+    return 0;
+}
+
+
