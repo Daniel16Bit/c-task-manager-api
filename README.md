@@ -184,7 +184,6 @@ Cliente
 - ⚠️ **Single-threaded** (uma conexão por vez)
 - ⚠️ **Apenas Windows** (usa Winsock)
 
-**Melhorias futuras:** Ver seção "Roadmap" abaixo.
 
 ## 📸 Screenshots
 
@@ -419,20 +418,6 @@ Client
 - ⚠️ **Single-threaded** (one connection at a time)
 - ⚠️ **Windows only** (uses Winsock)
 
-**Future improvements:** See "Roadmap" section below.
-
----
-
-## 🗺️ Roadmap
-
-- [ ] JSON body parser (POST/PUT with real data)
-- [ ] CLI interface (interactive menu)
-- [ ] Automated tests
-- [ ] Modular refactoring (server.c, http.c)
-- [ ] Linux version (replace Winsock with BSD sockets)
-- [ ] Multi-threading support (concurrent connections)
-- [ ] Basic authentication (JWT/tokens)
-
 ---
 
 ## 📸 Screenshots
@@ -480,5 +465,3 @@ This project is open source for educational purposes.
 Project developed as part of my studies in Software Engineering, focusing on systems programming and networking.
 
 ---
-
-**🌍 [Versão em Português](README.md) | English Version**
