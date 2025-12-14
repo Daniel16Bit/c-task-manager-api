@@ -60,7 +60,7 @@ c-task-manager-api/
 
 1. **Clone o repositório:**
 ```bash
-   git clone [SEU_REPOSITORIO]
+   git clone https://github.com/Daniel16Bit/c-task-manager-api.git
    cd c-task-manager-api/project
 ```
 
