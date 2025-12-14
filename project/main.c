@@ -10,6 +10,7 @@ persistência em SQLite e backend com API REST criada manualmente com sockets HT
 #include <windows.h>
 #include <stdio.h>
 #include <string.h>
+#include "database.h"
 
 // Função para extrair o caminho da requisição HTTP
 void extrair_requisao(const char *requisicao, char *metodo, char *caminho, size_t tamanho)
@@ -75,6 +76,15 @@ int main()
     printf("Servidor escutando na porta 8080...\n");
     printf("Aguardando conexoes...\n\n");
 
+    // ===== INICIALIZAR BANCO DE DADOS =====
+    if (db_init("task.db") != 0)
+    {
+        printf("Erro ao inicializar banco de dados");
+        closesocket(servidor);
+        return 1;
+    }
+    printf("Banco de dados inicializado!\n\n");
+
     while (1)
     {
         printf("Aguardando proximo cliente...\n");
@@ -120,24 +130,72 @@ int main()
             // ===== ROTA: GET /tasks =====
             else if (strcmp(metodo, "GET") == 0 && strcmp(caminho, "/tasks") == 0)
             {
-                resposta =
-                    "HTTP/1.1 200 OK\r\n"
-                    "Content-Type: application/json\r\n"
-                    "\r\n"
-                    "{\"tasks\": [{\"id\": 1, \"title\": \"Aprender C\"}, {\"id\": 2, \"title\": \"Criar API\"}]}";
+                int count;
+                Task *tasks = db_get_all_tasks(&count);
+
+                if (count == 0)
+                {
+                    resposta =
+                        "HTTP/1.1 200 OK\r\n"
+                        "Content-Type: application/json\r\n"
+                        "\r\n"
+                        "{\"tasks\": []}";
+                }
+                else
+                {
+                    // Montar JSON manualmente
+                    char json_body[4086] = "{\"tasks\": [";
+
+                    for (int i = 0; i < count; i++)
+                    {
+                        char task_json[512];
+                        snprintf(task_json, sizeof(task_json),
+                                 "{\"id\": %d, \"title\": \"%s\", \"completed\": %d}%s",
+                                 tasks[i].id, tasks[i].title, tasks[i].completed,
+                                 (i < count - 1) ? "," : "");
+                        strcat(json_body, task_json);
+                    }
+                    strcat(json_body, "]}");
+
+                    char http_response[5000];
+                    snprintf(http_response, sizeof(http_response),
+                             "HTTP/1.1 200 OK\r\n"
+                             "Content-Type: application/json\r\n"
+                             "\r\n"
+                             "%s",
+                             json_body);
+
+                    send(cliente, http_response, strlen(http_response), 0);
+                    free(tasks);
+
+                    closesocket(cliente);
+                    printf("Resposta enviada ao cliente!\n");
+                    printf("Conexao encerrada.\n\n");
+                    continue;
+                }
             }
             // ===== ROTA: GET /tasks/:id =====
-            else if (strcmp(metodo, "GET") == 0 && strncmp(caminho, "/tasks/", 7) == 0)
-            {
+            else if (strcmp(metodo, "GET") == 0 && strncmp(caminho, "/tasks/", 7) == 0){
                 int task_id = atoi(caminho + 7);
 
-                char json_resposta[512];
-                snprintf(json_resposta, sizeof(json_resposta),
-                         "HTTP/1.1 200 OK\r\n"
-                         "Content-Type: application/json\r\n"
-                         "\r\n"
-                         "{\"id\": %d, \"title\": \"Tarefa %d\", \"completed\": false}",
-                         task_id, task_id);
+                Task * task = db_get_all_tasks_byId(task_id);
+
+                char json_resposta[1024];
+                if(task){
+                    snprintf(json_resposta, sizeof(json_resposta),
+                                "HTTP/1.1 200 OK\r\n"
+                                "Content-Type: application/json\r\n"
+                                "\r\n"
+                                "{\"id\": %d, \"title\": \"%s\", \"completed\": %d}",
+                                task->id, task-> title, task->completed);
+                    free(task);
+                }else{
+                    snprintf(json_resposta, sizeof(json_resposta),
+                            "HTTP/1.1 404 Not Found\r\n"
+                            "Content-Type: application/json\r\n"
+                            "\r\n"
+                            "{\"error\": \"Tarefa nao encontrada\"}");
+                }
 
                 send(cliente, json_resposta, strlen(json_resposta), 0);
                 printf("Resposta enviada ao cliente!\n");
@@ -146,48 +204,93 @@ int main()
                 printf("Conexao encerrada.\n\n");
                 continue;
             }
+
             // ===== ROTA: POST /tasks =====
-            else if (strcmp(metodo, "POST") == 0 && strcmp(caminho, "/tasks") == 0)
-            {
-                resposta =
-                    "HTTP/1.1 201 Created\r\n"
-                    "Content-Type: application/json\r\n"
-                    "\r\n"
-                    "{\"message\": \"Tarefa criada\", \"id\": 3}";
+            else if (strcmp(metodo, "POST") == 0 && strcmp(caminho, "/tasks") == 0){
+                // Por enquanto, cria com titulo padrão
+                // TODO: Parsear JSON do body depois
+
+                 int novo_id = db_create_task("Nova tarefa (via POST)", 0);
+
+                
+                 char json_resposta[512];
+                 if(novo_id > 0){
+                    snprintf(json_resposta, sizeof(json_resposta),
+                             "HTTP/1.1 201 Created\r\n"
+                             "Content-Type: application/json\r\n"
+                             "\r\n"
+                             "{\"message\": \"Tarefa criada\", \"id\": %d}", novo_id);         
+                 }else{
+                    snprintf(json_resposta, sizeof(json_resposta),
+                             "HTTP/1.1 500 Internal Server Error\r\n"
+                             "Content-Type: application/json\r\n"
+                             "\r\n"
+                             "{\"error\": \"Erro ao criar tarefa\"}");
+                 }
+            
+                send(cliente, json_resposta, strlen(json_resposta), 0);
+                printf("Resposta enviada ao cliente\n");
+
+                closesocket(cliente);
+                printf("Conexao encerrada.\n\n");
+                continue;
+
             }
+
+
             // ===== ROTA: PUT /tasks/:id =====
             else if (strcmp(metodo, "PUT") == 0 && strncmp(caminho, "/tasks/", 7) == 0)
             {
                 int task_id = atoi(caminho + 7);
+                // Por enquanto, atualiza com titulo padrão
+                // TODO: Parsear JSON do body depois
+                int resultado = db_update_task(task_id, "Tarefa atualizada(VIA PUT)", 1);
 
                 char json_resposta[512];
-                snprintf(json_resposta, sizeof(json_resposta),
-                         "HTTP/1.1 200 OK\r\n"
-                         "Content-Type: application/json\r\n"
-                         "\r\n"
-                         "{\"message\": \"Tarefa %d atualizada\"}",
-                         task_id);
+                if(resultado == 0){
+                   snprintf(json_resposta, sizeof(json_resposta),
+                            "HTTP/1.1 200 OK\r\n"
+                            "Content-Type: application/json\r\n"
+                            "\r\n"
+                            "{\"message\": \"Tarefa %d atualizada\"}", task_id);
+                }else{
+                    snprintf(json_resposta, sizeof(json_resposta),
+                            "HTTP/1.1 500 Internal Server Error\r\n"
+                            "Content-Type: application/json\r\n"
+                            "\r\n"
+                            "{\"error\": \"Erro ao atualizar tarefa\"}");
+                }
 
                 send(cliente, json_resposta, strlen(json_resposta), 0);
-                printf("Resposta enviada ao cliente!\n");
+                printf("Resposta enviada ao cliente\n");
 
                 closesocket(cliente);
                 printf("Conexao encerrada.\n\n");
                 continue;
             }
+
+
             // ===== ROTA: DELETE /tasks/:id =====
             else if (strcmp(metodo, "DELETE") == 0 && strncmp(caminho, "/tasks/", 7) == 0)
             {
                 int task_id = atoi(caminho + 7);
 
-                char json_resposta[512];
-                snprintf(json_resposta, sizeof(json_resposta),
-                         "HTTP/1.1 200 OK\r\n"
-                         "Content-Type: application/json\r\n"
-                         "\r\n"
-                         "{\"message\": \"Tarefa %d deletada\"}",
-                         task_id);
+                int resultado = db_delete_task(task_id);
 
+                char json_resposta[512];
+                if(resultado == 0){ 
+                snprintf(json_resposta, sizeof(json_resposta),
+                        "HTTP/1.1 200 OK\r\n"
+                        "Content-Type: application/json\r\n"
+                        "\r\n"
+                        "{\"message\": \"Tarefa %d deletada\"}", task_id);
+                } else {
+                   snprintf(json_resposta, sizeof(json_resposta),
+                           "HTTP/1.1 500 Internal Server Error\r\n"
+                           "Content-Type: application/json\r\n"
+                           "\r\n"
+                           "{\"error\": \"Erro ao deletar tarefa\"}");
+                }
                 send(cliente, json_resposta, strlen(json_resposta), 0);
                 printf("Resposta enviada ao cliente!\n");
 
@@ -212,7 +315,7 @@ int main()
         closesocket(cliente);
         printf("Conexao encerrada.\n\n");
     }
-
+    db_close();
     WSACleanup();
     return 0;
 }
