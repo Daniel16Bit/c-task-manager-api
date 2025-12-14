@@ -85,7 +85,7 @@ Task* db_get_all_tasks(int *count){
     *count = 00;
     
     // Primeiro, contar quantas tarefas existem
-    const char *sql_count = "SELECT * FROM Task;";
+    const char *sql_count = "SELECT * FROM Tasks;";
     sqlite3_exec(db, sql_count, count_callback, count, NULL);
 
     if (*count == 0){
@@ -103,26 +103,26 @@ Task* db_get_all_tasks(int *count){
 
 }
 
-Task* db_get_all_tasks_byId(int id){
+// Retorna uma tarefa por ID
+Task* db_get_task_by_id(int id) {
     char sql[256];
-    snprintf(sql, sizeof(sql), "SELECET * FROM tasks WHERE id = %d;", id);
-
+    snprintf(sql, sizeof(sql), "SELECT * FROM tasks WHERE id = %d;", id);
+    
     int count = 0;
     sqlite3_exec(db, sql, count_callback, &count, NULL);
-
-    if (count == 0){
+    
+    if (count == 0) {
         return NULL;
     }
-
+    
     Task *task = (Task*)malloc(sizeof(Task));
     task_array = task;
     task_index = 0;
-
-    sqlite3_exec(db, sql, tasks_callback, NULL,NULL);
-
+    
+    sqlite3_exec(db, sql, tasks_callback, NULL, NULL);
+    
     return task;
 }
-
 
 // Atualizando tarefa
 int db_update_task(int id, const char *title, int completed){

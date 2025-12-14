@@ -18,7 +18,7 @@ void db_close();
 int db_create_task(const char *title, int completed);
 
 Task* db_get_all_tasks(int *count);
-Task* db_get_all_tasks_byId(int id);
+Task* db_get_task_by_id(int id);
 
 int db_update_task(int id, const char *title, int completed);
 int db_delete_task(int id);

@@ -178,7 +178,7 @@ int main()
             else if (strcmp(metodo, "GET") == 0 && strncmp(caminho, "/tasks/", 7) == 0){
                 int task_id = atoi(caminho + 7);
 
-                Task * task = db_get_all_tasks_byId(task_id);
+            Task * task = db_get_task_by_id(task_id);
 
                 char json_resposta[1024];
                 if(task){
