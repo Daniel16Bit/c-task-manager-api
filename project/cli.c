@@ -35,6 +35,66 @@ static void show_menu() {
     printf("Escolha uma opcao: ");
 }
 
+//Opção 01: Listas todas
+static void cli_list_task(){
+    clear_screen();
+    printf("=== LISTAR TODAS AS TAREFAS ===\n\n");
+
+    int count;
+    Task *tasks = db_get_all_tasks(&count);
+
+    if (count == 0){
+        printf("Nenhuma tarefa encontrada. \n");
+    }else{
+        printf("Total: %d tarefa(s)\n\n", count);
+        printf("%-5s %-40s %-10s\n", "ID", "Titulo", "Status");
+        printf("------------------------------------------------------------\n");
+
+        for(int i = 0; i < count; i++){
+            printf("%-5d %-40s %-10s\n",
+                tasks[i].id,
+                tasks[i].title,
+                tasks[i].completed ? "Completa" : "Pendente");
+        }
+                free(tasks);
+    }
+    pause_screen();
+}
+
+//Opção 03: Buscar por ID
+
+static void cli_get_id(){
+    clear_screen();
+    printf("=== BUSCAR TAREFA POR ID ===\n\n");
+
+    int id;
+    printf("Digite o ID da tarefa: ");
+    scanf("%d, &id");
+
+    Task *task = db_get_task_by_id(id);
+
+    if (task) {
+        printf("\n--- Tarefa Encontrada ---\n");
+        printf("ID:        %d\n", task->id);
+        printf("Titulo:    %s\n", task->title);
+        printf("Status:    %s\n", task->completed ? "Completa" : "Pendente");
+        printf("Completed: %d\n", task->completed);
+        free(task);
+    }else{
+        printf("\nTarefa com ID %D não encontrada.\n", id);
+    }
+    pause_screen();
+}
+
+// Opção 03: Criar nova Task
+
+static void cli_create_task(){
+    clear_screen();
+    printf("=== CRIAR NOVA TAREFA ===\n\n");
+
+    char title[256];
+    int completed;
+}
 
 
 
