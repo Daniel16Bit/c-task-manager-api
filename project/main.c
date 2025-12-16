@@ -16,8 +16,7 @@ GitHub: https://github.com/Daniel16Bit/c-task-manager-api
 #define PORTA_PADRAO 8080
 
 // Exibe menu de seleção de modo
-static void show_mode_menu()
-{
+static void show_mode_menu() {
     printf("\n");
     printf("========================================\n");
     printf("      C TASK MANAGER API v1.0          \n");
@@ -32,57 +31,50 @@ static void show_mode_menu()
     printf("Opcao: ");
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     // Verificar argumentos da linha de comando
-    if (argc < 1)
-    {
-        if (strcmp(argv[1], "--server") == 0)
-        {
+    if (argc > 1) {
+        if (strcmp(argv[1], "--server") == 0) {
             // Modo servidor direto
             printf("Iniciando em modo SERVIDOR...\n\n");
-
-            if (db_init("task.db") != 0)
-            {
+            
+            if (db_init("tasks.db") != 0) {
                 fprintf(stderr, "Erro ao inicializar banco de dados!\n");
                 return 1;
             }
-
-            SOCKET servidor = servidor_init(PORTA_PADRAO);
-            if (servidor == INVALID_SOCKET)
-            {
+            
+            SOCKET servidor = server_init(PORTA_PADRAO);
+            if (servidor == INVALID_SOCKET) {
                 db_close();
                 return 1;
             }
+            
             server_run(servidor);
-
+            
             server_cleanup(servidor);
-            db_close();
-            return 1;
-        }
-        else if (strcmp(argv[1], "--cli") == 0)
-        {
-            // odo CLI direto
-            printf("Iniciando o modo CLI...\n\n");
-
-            if (db_init("task.db") != 0)
-            {
-                fprintf(stderr, "Erro ao inicializar banco de dados!\n");
-                return 1;
-            }
-            cli_start();
-
             db_close();
             return 0;
         }
-        else if (strcmp(argv[1], "--test") == 0)
-        {
+        else if (strcmp(argv[1], "--cli") == 0) {
+            // Modo CLI direto
+            printf("Iniciando em modo CLI...\n\n");
+            
+            if (db_init("tasks.db") != 0) {
+                fprintf(stderr, "Erro ao inicializar banco de dados!\n");
+                return 1;
+            }
+            
+            cli_start();
+            
+            db_close();
+            return 0;
+        }
+        else if (strcmp(argv[1], "--test") == 0) {
             // Modo teste direto
             int failed = run_all_tests();
             return (failed == 0) ? 0 : 1;
         }
-        else if (strcmp(argv[1], "--help") == 0)
-        {
+        else if (strcmp(argv[1], "--help") == 0) {
             printf("\nC Task Manager API - Uso:\n\n");
             printf("  server.exe              Menu interativo\n");
             printf("  server.exe --server     Iniciar servidor HTTP\n");
@@ -92,44 +84,40 @@ int main(int argc, char *argv[])
             return 0;
         }
     }
-
+    
     // Modo interativo (menu)
     int opcao;
-
-    do
-    {
-        show_mod_menu();
+    
+    do {
+        show_mode_menu();
         scanf("%d", &opcao);
-
-        switch (opcao)
-        {
-        case 1:
-        {
-            // Servidor HTTP
-            printf("\nIniciando SERVIDOR HTTP...\n\n");
-
-            if (db_init("tasks.db") != 0)
-            {
-                fprintf(stderr, "Erro ao inicializar banco de dados!\n");
-                return 1;
-            }
-
-            SOCKET servidor = server_init(PORTA_PADRAO);
-            if (servidor == INVALID_SOCKET)
-            {
+        
+        switch (opcao) {
+            case 1: {
+                // Servidor HTTP
+                printf("\nIniciando SERVIDOR HTTP...\n\n");
+                
+                if (db_init("tasks.db") != 0) {
+                    fprintf(stderr, "Erro ao inicializar banco de dados!\n");
+                    return 1;
+                }
+                
+                SOCKET servidor = server_init(PORTA_PADRAO);
+                if (servidor == INVALID_SOCKET) {
+                    db_close();
+                    return 1;
+                }
+                
+                printf("Pressione Ctrl+C para encerrar o servidor.\n\n");
+                
+                server_run(servidor);
+                
+                server_cleanup(servidor);
                 db_close();
-                return 1;
+                break;
             }
-
-            printf("Pressione Ctrl+C para encerrar o servidor.\n\n");
-
-            server_run(servidor);
-
-            server_cleanup(servidor);
-            db_close();
-            break;
-        }
-       case 2: {
+            
+            case 2: {
                 // CLI
                 printf("\nIniciando INTERFACE CLI...\n\n");
                 
