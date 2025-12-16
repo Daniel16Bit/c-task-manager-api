@@ -1,6 +1,6 @@
-#ifndef CLI.H
-#define CLI.H
+#ifndef CLI_H
+#define CLI_H
 
-void cli.start();
+void cli_start();
 
 #endif

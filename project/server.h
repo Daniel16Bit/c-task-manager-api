@@ -1,5 +1,5 @@
-#ifndef SERVER.H
-#define SERVER.H
+#ifndef SERVER_H
+#define SERVER_H
 
 #include <winsock2.h>
 
