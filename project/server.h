@@ -5,7 +5,7 @@
 
 // Iniciando Winsock e criação de sockets na port 
 // Retorna: Socket  invalida ou valido (INVALID_SOCKET) em caso de erro
-int server_init(int porta);
+SOCKET server_init(int porta);
 
 // Loop principal do server
 void server_run(SOCKET servidor);

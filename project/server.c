@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <ws2tcpip.h>
 
-int server_init(int porta) {
+SOCKET server_init(int porta) {
     WSADATA wsa;
     int result = WSAStartup(MAKEWORD(2, 2), &wsa);
     

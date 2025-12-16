@@ -58,18 +58,18 @@ static void test_db_read(){
     db_create_task("Tarefa B", 1);
 
     int count;
-    Task *task = db_get_all_tasks(&count);
+    Task *tasks = db_get_all_tasks(&count);
 
     ASSERT(count == 2, "Deve retornar 2 tarefas");
-    ASSERT(strcmp(task[0].title, "Tarefa A") == 0,  "Primeira tarefa deve ser 'Tarefa A'");
-    ASSERT(task[1].completed == 1, "Segunda tarefa deve estar completa");
+    ASSERT(strcmp(tasks[0].title, "Tarefa A") == 0,  "Primeira tarefa deve ser 'Tarefa A'");
+    ASSERT(tasks[1].completed == 1, "Segunda tarefa deve estar completa");
 
-    free(task);
+    free(tasks);
 
-    Task *task = db_get_task_by_id(1);
-    ASSERT(task != NULL, "Deve encontrar por ID");
-    ASSERT(strcmp(task->title, "Tarefa A") == 0, "Titulo deve ser 'Tarefa A'");
-    free(task);
+    Task *task_individual = db_get_task_by_id(1);
+    ASSERT(task_individual != NULL, "Deve encontrar por ID");
+    ASSERT(strcmp(task_individual->title, "Tarefa A") == 0, "Titulo deve ser 'Tarefa A'");
+    free(task_individual);
 
     Task *inexistente = db_get_task_by_id(999);
     ASSERT(inexistente == NULL, "Tarefa inexistente deve retornar NULL");

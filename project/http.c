@@ -119,7 +119,7 @@ static void route_get_task_by_id(SOCKET cliente, int task_id)
                  "{\"error\": \"Tarefa nao encontrada\"}");
     }
 
-    send - response(cliente, json_resposta);
+    send_response(cliente, json_resposta);
 }
 
 // Rota: POST /tasks
